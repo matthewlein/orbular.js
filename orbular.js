@@ -56,8 +56,8 @@ OrbPile.prototype = {
             for (var count=0; count < this.orbCount; count++) {
 
                 r = this.armLength - ( this.orbDistance * count );
-                x = Math.round( ( Math.cos( rads ) * r ) + canvas.height/2 );
-                y = Math.round( ( Math.sin( rads ) * r ) + canvas.width/2 );
+                x =  ( Math.cos( rads ) * r ) + canvas.height/2;
+                y =  ( Math.sin( rads ) * r ) + canvas.width/2;
                 
                 this.orbs.push( new Orb(x,y,this.circleSize,this.color) );
 
