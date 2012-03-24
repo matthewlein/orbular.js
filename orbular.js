@@ -3,7 +3,7 @@
 var canvas = document.getElementById('orbs');
 var ctx = canvas.getContext('2d');
 
-var cWidth = 600;
+var cWidth = 900;
 var cHeight = 600;
 
 canvas.width = cWidth;
@@ -20,11 +20,13 @@ function DEG_RAD(deg) {
 }
 
 function setHash() {
-	location.hash = '#' + JSON.stringify(values);
+	if ( history.replaceState ) {
+	    history.replaceState( JSON.stringify(values),null,'#'+JSON.stringify(values) )
+	}
 }
 
 function getHash() {
-    values = JSON.parse( location.hash.replace('#','') );
+    return JSON.parse( location.hash.replace('#','') );
 }
 
 
@@ -88,8 +90,8 @@ OrbPile.prototype = {
             for (var count=0; count < this.orbCount; count++) {
 
                 r =  this.centerRadius + ( this.orbDistance * count );
-                x =  ( Math.cos( rads ) * r ) + cHeight/2;
-                y =  ( Math.sin( rads ) * r ) + cWidth/2;
+                x =  ( Math.cos( rads ) * r ) + cWidth/2;
+                y =  ( Math.sin( rads ) * r ) + cHeight/2;
                 
                 this.orbs.push( new Orb(x,y,this.orbSize,this.orbColor) );
 
@@ -149,39 +151,6 @@ Orb.prototype = {
     
 };
 
-var orbHolder = new OrbPile();
-
-
-// --------------------------------------------------------------------- //
-// dat.GUI controller
-// --------------------------------------------------------------------- //
-
-
-var gui = new dat.GUI({
-    arms : 13
-});
-
-
-var guiController = {
-    arms : gui.add(orbHolder, 'arms', 1, 25).step(1),
-    armLength : gui.add(orbHolder, 'armLength', 1, 500).step(1),
-    orbSize : gui.add(orbHolder, 'orbSize', 1, 90).step(1),
-    orbDensity : gui.add(orbHolder, 'orbDensity', 0, 1).step(0.01),
-    centerRadius : gui.add(orbHolder, 'centerRadius', 1, 90).step(1),
-    rotateSpeed : gui.add(orbHolder, 'rotateSpeed', -10, 10).step(0.1),
-    motionBlur : gui.add(orbHolder, 'motionBlur', 0, 1).step(0.01),
-    angle : gui.add(orbHolder, 'angle', 0, 360).step(1),
-    orbColor : gui.addColor(orbHolder, 'orbColor'),
-    bgColor : gui.addColor(orbHolder, 'bgColor')
-};
-
-for (var i=0; i < gui.__controllers.length; i++) {
-    gui.__controllers[i].onChange(function(value) {
-        values[this.property] = value;
-    });
-}
-
-
 
 
 var values = {
@@ -199,58 +168,55 @@ var values = {
 
 
 
-/*
-for (var prop in guiController) {
-    guiController[prop].onFinishChange(function(value) {
-        values[this.property] = value;
-        console.log(value)
-    });
-}
-*/
-
-
-/*
-function getColors() {
-    
-    var colors = document.querySelectorAll('li.color');
-    var prop;
-    var val;
-    
-    for (var i=0; i < colors.length; i++) {
-        prop = colors[i].querySelectorAll('.property-name')[0].innerHTML;
-        val = colors[i].querySelectorAll('input')[0].value;
-        values[prop] = val;
-    }
-}
-
-function colorEvents() {
-    
-    var colorsInputs = document.querySelectorAll('li.color input');
-    
-    console.log(colorsInputs)
-    
-    for (var i=0; i < colorsInputs.length; i++) {
-         console.log('change')
-        colorsInputs[i].addEventListener('change', function() {
-            console.log('change')
-        }, false);
-    }
-    
-}
-for (var i=0; i < gui.__controllers.length; i++) {
-    gui.__controllers[i].onFinishChange(function(value) {
-        values[this.property] = value;
-        // have to get colors every time cuz its change is busted
-        //getColors();
-    });
-}
-*/
-var animate = function() {
-    requestAnimFrame( animate );
-    orbHolder.update();
-}
-
 var init = function() {
+    
+    if (window.hash) {
+        getHash();
+    }
+    
+    // TODO
+    // have defaults obj
+    // merge defaults with hash values
+    // create orbPile with options
+    
+    var orbHolder = new OrbPile();
+
+
+    // --------------------------------------------------------------------- //
+    // dat.GUI controller
+    // --------------------------------------------------------------------- //
+
+
+    var gui = new dat.GUI();
+
+
+    var guiController = {
+        arms : gui.add(orbHolder, 'arms', 1, 25).step(1),
+        armLength : gui.add(orbHolder, 'armLength', 1, 550).step(1),
+        orbSize : gui.add(orbHolder, 'orbSize', 1, 90).step(1),
+        orbDensity : gui.add(orbHolder, 'orbDensity', 0, 1).step(0.01),
+        centerRadius : gui.add(orbHolder, 'centerRadius', 1, 90).step(1),
+        rotateSpeed : gui.add(orbHolder, 'rotateSpeed', -10, 10).step(0.1),
+        motionBlur : gui.add(orbHolder, 'motionBlur', 0, 1).step(0.01),
+        angle : gui.add(orbHolder, 'angle', 0, 360).step(1),
+        orbColor : gui.addColor(orbHolder, 'orbColor'),
+        bgColor : gui.addColor(orbHolder, 'bgColor')
+    };
+
+    // set change event
+    // TODO throttle?
+    for (var i=0; i < gui.__controllers.length; i++) {
+        gui.__controllers[i].onChange(function(value) {
+            values[this.property] = value;
+            setHash();
+        });
+    }
+    
+    var animate = function() {
+        requestAnimFrame( animate );
+        orbHolder.update();
+    }
+    
     animate();
 };
 
