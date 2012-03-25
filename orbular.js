@@ -132,7 +132,6 @@ var Orbular = (function(){
         this.motionBlur = this.opts.motionBlur;
         this.bgColor = this.opts.bgColor;
 
-    
         this.orbs = [];
     
     };
@@ -182,12 +181,8 @@ var Orbular = (function(){
         clearCanvas : function() {    
             ctx.save();
             //semi-transparent box for motion trails
-            var r = Math.round( this.bgColor[0] );
-            var g = Math.round( this.bgColor[1] );
-            var b = Math.round( this.bgColor[2] );
-            var a = (1 - this.motionBlur);
-        
-            ctx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + a + ")";
+            ctx.fillStyle = this.bgColor;
+            ctx.globalAlpha = (1 - this.motionBlur);
             ctx.fillRect(0,0,cWidth,cHeight);
 
             ctx.restore();
@@ -237,7 +232,7 @@ var Orbular = (function(){
         motionBlur : 0.02,
         angle : 0,
         orbColor : "#ffae23",
-        bgColor : [255,255,255]
+        bgColor : "#ffffff"
     }
 
     var userOpts = {};
@@ -250,19 +245,14 @@ var Orbular = (function(){
         }
     
         var opts = extend( {}, defaultOpts, userOpts);
-    
 
-    
         var orbHolder = new OrbPile(opts);
-
 
         // --------------------------------------------------------------------- //
         // dat.GUI controller
         // --------------------------------------------------------------------- //
 
-
         var gui = new dat.GUI();
-
 
         var guiController = {
             arms : gui.add(orbHolder, 'arms', 1, 25).step(1),
@@ -278,7 +268,6 @@ var Orbular = (function(){
         };
 
         // set change event
-        // TODO throttle?
         for (var i=0; i < gui.__controllers.length; i++) {
             gui.__controllers[i].onChange(function(value) {
                 userOpts[this.property] = value;
